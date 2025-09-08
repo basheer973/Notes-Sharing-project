@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JNTUK R23 Notes Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    h2 { margin-bottom: 20px; }
+    button, input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background: orangered;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .card {
+      padding: 15px;
+      background: orangered;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .hidden { display: none; }
+    .back-btn {
+      width: auto;
+      padding: 8px 16px;
+      margin-top: 20px;
+      background: gray;
+    }
+    ul { list-style: none; padding: 0; }
+    li { margin: 5px 0; }
+    a { text-decoration: none; color: blue; margin-right: 10px; }
+    small { display: block; margin-top: 15px; cursor: pointer; color: blue; }
+  </style>
+</head>
+<body>
+
+<!-- Entrance Page -->
+<div class="container" id="entrancePage">
+  <h2>Welcome to JNTUK R23 Notes Portal</h2>
+  <button onclick="goToSemesters('student')">Enter</button>
+  <small onclick="goToFacultyLogin()">Faculty Login</small>
+</div>
+
+<!-- Faculty Login Page -->
+<div class="container hidden" id="facultyLoginPage">
+  <h2>Faculty Login</h2>
+  <input type="password" id="facultyCode" placeholder="Enter Faculty Code">
+  <button onclick="checkFacultyCode()">Login</button>
+  <button class="back-btn" onclick="backToEntrance()">← Back</button>
+</div>
+
+<!-- Semester Page -->
+<div class="container hidden" id="semesterPage">
+  <h2>Select Semester</h2>
+  <div class="grid" id="semesterGrid"></div>
+  <button class="back-btn" onclick="backToEntrance()">← Back</button>
+</div>
+
+<!-- Subjects Page -->
+<div class="container hidden" id="subjectsPage">
+  <h2 id="semesterTitle"></h2>
+  <div class="grid" id="subjectsGrid"></div>
+  <button class="back-btn" onclick="backToSemesters()">← Back</button>
+</div>
+
+<!-- Units Page -->
+<div class="container hidden" id="unitsPage">
+  <h2 id="subjectTitle"></h2>
+  <div class="grid" id="unitsGrid"></div>
+  <button class="back-btn" onclick="backToSubjects()">← Back</button>
+</div>
+
+<!-- Upload/Download Page -->
+<div class="container hidden" id="uploadPage">
+  <h2 id="unitTitle"></h2>
+  
+  <!-- Faculty controls -->
+  <div id="facultySection" class="hidden">
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload Notes</button>
+  </div>
+  
+  <h3>Available Notes:</h3>
+  <ul id="notesList"></ul>
+  <button class="back-btn" onclick="backToUnits()">← Back</button>
+</div>
+
+<script>
+  let currentRole = "student";
+  let currentSemester = "";
+  let currentSubject = "";
+  let currentUnit = "";
+
+  // Subject structure for JNTUK R23 (CSE)
+  const syllabus = {
+    "1-1": ["Engineering Physics", "Programming in C", "Engineering Graphics", "Mathematics-I", "English"],
+    "1-2": ["Engineering Chemistry", "Data Structures", "Mathematics-II", "Digital Logic Design", "Communicative English"],
+    "2-1": ["Computer Organization", "Discrete Mathematics", "OOPs with Java", "Probability & Statistics", "Environmental Science"],
+    "2-2": ["Operating Systems", "DBMS", "Computer Networks", "Design & Analysis of Algorithms", "Mathematics-III"],
+    "3-1": ["Compiler Design", "Machine Learning", "Software Engineering", "Web Technologies", "Open Elective-I"],
+    "3-2": ["Artificial Intelligence", "Cloud Computing", "Information Security", "Data Mining", "Open Elective-II"],
+    "4-1": ["Big Data Analytics", "IoT", "Deep Learning", "Professional Elective-I", "Open Elective-III"],
+    "4-2": ["Project Work", "Seminar", "Comprehensive Viva", "Professional Elective-II", "Open Elective-IV"]
+  };
+
+  function goToFacultyLogin() {
+    document.getElementById("entrancePage").classList.add("hidden");
+    document.getElementById("facultyLoginPage").classList.remove("hidden");
+  }
+  function checkFacultyCode() {
+    let entered = document.getElementById("facultyCode").value.trim();
+    if (entered === "FAC123") {
+      currentRole = "faculty";
+      goToSemesters("faculty");
+    } else {
+      alert("Invalid Faculty Code!");
+    }
+  }
+  function goToSemesters(role) {
+    currentRole = role;
+    document.getElementById("entrancePage").classList.add("hidden");
+    document.getElementById("facultyLoginPage").classList.add("hidden");
+    document.getElementById("semesterPage").classList.remove("hidden");
+
+    let grid = document.getElementById("semesterGrid");
+    grid.innerHTML = "";
+    Object.keys(syllabus).forEach(sem => {
+      let div = document.createElement("div");
+      div.className = "card";
+      div.innerText = sem.replace("-", " - Semester ");
+      div.onclick = () => goToSubjects(sem);
+      grid.appendChild(div);
+    });
+  }
+
+  function goToSubjects(semester) {
+    currentSemester = semester;
+    document.getElementById("semesterPage").classList.add("hidden");
+    document.getElementById("subjectsPage").classList.remove("hidden");
+    document.getElementById("semesterTitle").innerText = "Subjects ("+semester+")";
+
+    let grid = document.getElementById("subjectsGrid");
+    grid.innerHTML = "";
+    syllabus[semester].forEach(sub => {
+      let div = document.createElement("div");
+      div.className = "card";
+      div.innerText = sub;
+      div.onclick = () => goToUnits(sub);
+      grid.appendChild(div);
+    });
+  }
+
+  function goToUnits(subject) {
+    currentSubject = subject;
+    document.getElementById("subjectsPage").classList.add("hidden");
+    document.getElementById("unitsPage").classList.remove("hidden");
+    document.getElementById("subjectTitle").innerText = subject;
+
+    let grid = document.getElementById("unitsGrid");
+    grid.innerHTML = "";
+    ["Unit-1","Unit-2","Unit-3","Unit-4","Unit-5","Syllabus"].forEach(unit => {
+      let div = document.createElement("div");
+      div.className = "card";
+      div.innerText = unit;
+      div.onclick = () => openUnit(unit);
+      grid.appendChild(div);
+    });
+  }
+
+  function openUnit(unit) {
+    currentUnit = unit;
+    document.getElementById("unitsPage").classList.add("hidden");
+    document.getElementById("uploadPage").classList.remove("hidden");
+    document.getElementById("unitTitle").innerText = currentSubject + " - " + unit;
+
+    if (currentRole === "faculty") {
+      document.getElementById("facultySection").classList.remove("hidden");
+    } else {
+      document.getElementById("facultySection").classList.add("hidden");
+    }
+    loadNotes();
+  }
+
+  // Upload file
+  function uploadFile() {
+    let fileInput = document.getElementById("fileInput");
+    if (fileInput.files.length === 0) {
+      alert("Please select a file!");
+      return;
+    }
+    let file = fileInput.files[0];
+    let key = currentSemester+"-"+currentSubject+"-"+currentUnit;
+    let notesData = JSON.parse(localStorage.getItem("notesData") || "{}");
+    if (!notesData[key]) notesData[key] = [];
+    let fakeUrl = URL.createObjectURL(file);
+    notesData[key].push({ name: file.name, url: fakeUrl });
+    localStorage.setItem("notesData", JSON.stringify(notesData));
+    alert("Uploaded Successfully!");
+    fileInput.value = "";
+    loadNotes();
+  }
+
+  // Load notes
+  function loadNotes() {
+    let key = currentSemester+"-"+currentSubject+"-"+currentUnit;
+    let notesData = JSON.parse(localStorage.getItem("notesData") || "{}");
+    let list = document.getElementById("notesList");
+    list.innerHTML = "";
+    if (notesData[key]) {
+      notesData[key].forEach((file, index) => {
+        let li = document.createElement("li");
+        li.innerHTML = `<a href="${file.url}" download="${file.name}">${file.name}</a>`;
+        if (currentRole === "faculty") {
+          li.innerHTML += `<button onclick="deleteFile('${key}', ${index})">Delete</button>`;
+        }
+        list.appendChild(li);
+      });
+    }
+  }
+
+  // Delete file
+  function deleteFile(key, index) {
+    let notesData = JSON.parse(localStorage.getItem("notesData") || "{}");
+    notesData[key].splice(index, 1);
+    localStorage.setItem("notesData", JSON.stringify(notesData));
+    loadNotes();
+  }
+
+  // Back functions
+  function backToEntrance() {
+    document.getElementById("semesterPage").classList.add("hidden");
+    document.getElementById("facultyLoginPage").classList.add("hidden");
+    document.getElementById("entrancePage").classList.remove("hidden");
+  }
+  function backToSemesters() {
+    document.getElementById("subjectsPage").classList.add("hidden");
+    document.getElementById("semesterPage").classList.remove("hidden");
+  }
+  function backToSubjects() {
+    document.getElementById("unitsPage").classList.add("hidden");
+    document.getElementById("subjectsPage").classList.remove("hidden");
+  }
+  function backToUnits() {
+    document.getElementById("uploadPage").classList.add("hidden");
+    document.getElementById("unitsPage").classList.remove("hidden");
+  }
+function backToEntrance() {
+  if (currentRole === "faculty") {
+    let confirmExit = confirm("Do you really want to exit? Your login will be cleared.");
+    if (!confirmExit) {
+      return; // stay on semesters page
+    }
+    // Clear faculty session
+    currentRole = "student";
+    document.getElementById("facultyCode").value = "";
+  }
+
+  // Hide all and show entrance
+  document.getElementById("semesterPage").classList.add("hidden");
+  document.getElementById("facultyLoginPage").classList.add("hidden");
+  document.getElementById("entrancePage").classList.remove("hidden");
+}
+
+</script>
+
+</body>
+</html>
