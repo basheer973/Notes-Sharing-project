@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JNTUK R23 Notes Portal</title>
+  <title>Notes Sharing Portal</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -68,13 +68,58 @@
     li { margin: 5px 0; }
     a { text-decoration: none; color: #f57f17; margin-right: 10px; }
     small { display: block; margin-top: 15px; cursor: pointer; color: #f57f17; }
+
+    /* Fullscreen Welcome Slide */
+    #welcomeSlide {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(135deg, #fdd835, #f57f17); /* updated warm gradient */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    #welcomeSlide h2 {
+      font-size: 2rem;
+      color: white;
+      margin-bottom: 20px;
+    }
+    #welcomeSlide p {
+      font-size: 1.2rem;
+      color: #fffde7;
+      margin-bottom: 30px;
+    }
+    #welcomeSlide button {
+      width: auto;
+      padding: 12px 24px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: none;
+      background: white;
+      color: #f57f17;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #welcomeSlide button:hover {
+      background: #ffe082;
+    }
   </style>
 </head>
 <body>
 
+<!-- New Fullscreen Welcome Slide -->
+<div id="welcomeSlide">
+  <h2>✨ Welcome to Notes Sharing Portal ✨</h2>
+  <p>Share and access study materials with ease.</p>
+  <button onclick="goToEntrance()">Continue →</button>
+</div>
+
 <!-- Entrance Page -->
-<div class="container" id="entrancePage">
-  <h2>Welcome to JNTUK R23 Notes Portal</h2>
+<div class="container hidden" id="entrancePage">
+  <h2>Welcome to Notes Sharing Portal</h2>
   <button onclick="goToSemesters('student')">Enter</button>
   <small onclick="goToFacultyLogin()">Faculty Login</small>
 </div>
@@ -139,6 +184,12 @@
     "4-1": ["Big Data Analytics", "IoT", "Deep Learning", "Professional Elective-I", "Open Elective-III"],
     "4-2": ["Project Work", "Seminar", "Comprehensive Viva", "Professional Elective-II", "Open Elective-IV"]
   };
+
+  // New function for welcome slide
+  function goToEntrance() {
+    document.getElementById("welcomeSlide").style.display = "none";
+    document.getElementById("entrancePage").classList.remove("hidden");
+  }
 
   function goToFacultyLogin() {
     document.getElementById("entrancePage").classList.add("hidden");
