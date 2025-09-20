@@ -203,27 +203,134 @@
 </div>
 
 <script>
-let currentRole="student",currentSemester="",currentSubject="",currentUnit="";
+let currentRole = "student", currentSemester = "", currentSubject = "", currentUnit = "", currentType = "units";
 
-const syllabus={"1-1":["Engineering chemistry","Programming in C","BCME","Mathematics-I","English"],"1-2":["Engineering physics","Data Structures","Mathematics-II","BEEE","engineering graphics"],"2-1":["DL&CO","Discrete Mathematics","OOPs with Java","UHV","advanced datastructures"],"2-2":["Operating Systems","DBMS","Probability & Statistics","MEFA","software engineering"],"3-1":["FLAT","computer networks","DWDM","EDC","OOAD"],"3-2":["Artificial Intelligence","Cloud Computing","Information Security","Data Mining","Open Elective-II"],"4-1":["Big Data Analytics","IoT","Deep Learning","Professional Elective-I","Open Elective-III"],"4-2":["Project Work","Seminar","Comprehensive Viva","Professional Elective-II","Open Elective-IV"]};
+const syllabus = {
+  "1-1":["Engineering chemistry","Programming in C","BCME","Mathematics-I","English"],
+  "1-2":["Engineering physics","Data Structures","Mathematics-II","BEEE","engineering graphics"],
+  "2-1":["DL&CO","Discrete Mathematics","OOPs with Java","UHV","advanced datastructures"],
+  "2-2":["Operating Systems","DBMS","Probability & Statistics","MEFA","software engineering"],
+  "3-1":["FLAT","computer networks","DWDM","EDC","OOAD"],
+  "3-2":["Artificial Intelligence","Cloud Computing","Information Security","Data Mining","Open Elective-II"],
+  "4-1":["Big Data Analytics","IoT","Deep Learning","Professional Elective-I","Open Elective-III"],
+  "4-2":["Project Work","Seminar","Comprehensive Viva","Professional Elective-II","Open Elective-IV"]
+};
 
 // Welcome
-function goToEntrance(){document.getElementById("welcomeSlide").style.display="none";showPage("entrancePage");}
-function goToFacultyLogin(){hidePages();showPage("facultyLoginPage");}
-function checkFacultyCode(){let entered=document.getElementById("facultyCode").value.trim();if(entered==="FAC123"){currentRole="faculty";goToSemesters("faculty");}else alert("Invalid Faculty Code!");}
-function goToSemesters(role){currentRole=role;hidePages();showPage("semesterPage");let grid=document.getElementById("semesterGrid");grid.innerHTML="";Object.keys(syllabus).forEach(sem=>{let div=document.createElement("div");div.className="card";div.innerText=sem.replace("-"," - Semester ");div.onclick=()=>goToSubjects(sem);grid.appendChild(div);});}
-function goToSubjects(semester){currentSemester=semester;hidePages();showPage("subjectsPage");document.getElementById("semesterTitle").innerText="Subjects ("+semester+")";let grid=document.getElementById("subjectsGrid");grid.innerHTML="";syllabus[semester].forEach(sub=>{let div=document.createElement("div");div.className="card";div.innerText=sub;div.onclick=()=>goToUnits(sub);grid.appendChild(div);});}
-function goToUnits(subject){currentSubject=subject;hidePages();showPage("unitsPage");document.getElementById("subjectTitle").innerText=subject;let grid=document.getElementById("unitsGrid");grid.innerHTML="";["Unit-1","Unit-2","Unit-3","Unit-4","Unit-5","Syllabus"].forEach(unit=>{let div=document.createElement("div");div.className="card";div.innerText=unit;div.onclick=()=>openUnit(unit);grid.appendChild(div);});}
-function openUnit(unit){currentUnit=unit;hidePages();showPage("uploadPage");document.getElementById("unitTitle").innerText=currentSubject+" - "+unit;if(currentRole==="faculty")document.getElementById("facultySection").classList.remove("hidden");else document.getElementById("facultySection").classList.add("hidden");loadNotes();}
-function uploadFile(){let fileInput=document.getElementById("fileInput");if(fileInput.files.length===0){alert("Please select a file!");return;}let file=fileInput.files[0];let key=currentSemester+"-"+currentSubject+"-"+currentUnit;let notesData=JSON.parse(localStorage.getItem("notesData")||"{}");if(!notesData[key])notesData[key]=[];let fakeUrl=URL.createObjectURL(file);notesData[key].push({name:file.name,url:fakeUrl});localStorage.setItem("notesData",JSON.stringify(notesData));alert("Uploaded Successfully!");fileInput.value="";loadNotes();}
-function loadNotes(){let key=currentSemester+"-"+currentSubject+"-"+currentUnit;let notesData=JSON.parse(localStorage.getItem("notesData")||"{}");let list=document.getElementById("notesList");list.innerHTML="";if(notesData[key]){notesData[key].forEach((file,index)=>{let li=document.createElement("li");li.innerHTML=`<a href="${file.url}" download="${file.name}">${file.name}</a>`;if(currentRole==="faculty")li.innerHTML+=`<button onclick="deleteFile('${key}',${index})">Delete</button>`;list.appendChild(li);});}}
-function deleteFile(key,index){let notesData=JSON.parse(localStorage.getItem("notesData")||"{}");notesData[key].splice(index,1);localStorage.setItem("notesData",JSON.stringify(notesData));loadNotes();}
-function backToEntrance(){if(currentRole==="faculty"){if(!confirm("Do you really want to exit? Your login will be cleared."))return;currentRole="student";document.getElementById("facultyCode").value="";}hidePages();showPage("entrancePage");}
-function backToSemesters(){hidePages();showPage("semesterPage");}
-function backToSubjects(){hidePages();showPage("subjectsPage");}
-function backToUnits(){hidePages();showPage("unitsPage");}
-function hidePages(){document.querySelectorAll(".container").forEach(c=>c.classList.add("hidden"));}
-function showPage(id){const page=document.getElementById(id);page.classList.remove("hidden");page.style.animation="fadeSlideUp 0.8s forwards";}
+function goToEntrance() { document.getElementById("welcomeSlide").style.display="none"; showPage("entrancePage"); }
+function goToFacultyLogin() { hidePages(); showPage("facultyLoginPage"); }
+function checkFacultyCode() {
+    let entered = document.getElementById("facultyCode").value.trim();
+    if(entered==="FAC123"){ currentRole="faculty"; goToSemesters("faculty"); }
+    else alert("Invalid Faculty Code!");
+}
+function goToSemesters(role) {
+    currentRole = role; hidePages(); showPage("semesterPage");
+    let grid = document.getElementById("semesterGrid");
+    grid.innerHTML = "";
+    Object.keys(syllabus).forEach(sem=>{
+        let div = document.createElement("div");
+        div.className="card";
+        div.innerText = sem.replace("-"," - Semester ");
+        div.onclick = ()=>goToSubjects(sem);
+        grid.appendChild(div);
+    });
+}
+function goToSubjects(semester){
+    currentSemester = semester;
+    hidePages(); showPage("subjectsPage");
+    document.getElementById("semesterTitle").innerText="Subjects ("+semester+")";
+    let grid = document.getElementById("subjectsGrid");
+    grid.innerHTML="";
+    syllabus[semester].forEach(sub=>{
+        let div = document.createElement("div");
+        div.className="card";
+        div.innerText=sub;
+        div.onclick=()=>goToUnits(sub);
+        grid.appendChild(div);
+    });
+}
+function goToUnits(subject){
+    currentSubject = subject;
+    hidePages(); showPage("unitsPage");
+    document.getElementById("subjectTitle").innerText = subject;
+    let grid = document.getElementById("unitsGrid");
+    grid.innerHTML = "";
+
+    ["Unit-1","Unit-2","Unit-3","Unit-4","Unit-5","Syllabus"].forEach(unit => {
+        let div = document.createElement("div");
+        div.className="card";
+        div.innerText = unit;
+        div.onclick = ()=>openUnit(unit,"units");
+        grid.appendChild(div);
+    });
+
+    let pqDiv = document.createElement("div");
+    pqDiv.className="card";
+    pqDiv.innerText="Previous Question Papers";
+    pqDiv.onclick = ()=>openUnit("Previous Question Papers","pq");
+    grid.appendChild(pqDiv);
+}
+function openUnit(unit,type){
+    currentUnit = unit;
+    currentType = type;
+    hidePages(); showPage("uploadPage");
+    document.getElementById("unitTitle").innerText = currentSubject + " - " + unit;
+    if(currentRole==="faculty") document.getElementById("facultySection").classList.remove("hidden");
+    else document.getElementById("facultySection").classList.add("hidden");
+    loadNotes();
+}
+
+function uploadFile(){
+    let fileInput=document.getElementById("fileInput");
+    if(fileInput.files.length===0){ alert("Please select a file!"); return; }
+    let file = fileInput.files[0];
+    let key = currentSemester + "-" + currentSubject + "-" + currentUnit + "-" + currentType;
+    let notesData = JSON.parse(localStorage.getItem("notesData") || "{}");
+    if(!notesData[key]) notesData[key] = [];
+    let fakeUrl = URL.createObjectURL(file);
+    notesData[key].push({name:file.name,url:fakeUrl});
+    localStorage.setItem("notesData",JSON.stringify(notesData));
+    alert("Uploaded Successfully!");
+    fileInput.value="";
+    loadNotes();
+}
+
+function loadNotes(){
+    let key = currentSemester + "-" + currentSubject + "-" + currentUnit + "-" + currentType;
+    let notesData = JSON.parse(localStorage.getItem("notesData")||"{}");
+    let list = document.getElementById("notesList");
+    list.innerHTML="";
+    if(notesData[key]){
+        notesData[key].forEach((file,index)=>{
+            let li = document.createElement("li");
+            li.innerHTML = `<a href="${file.url}" download="${file.name}">${file.name}</a>`;
+            if(currentRole==="faculty") li.innerHTML+=`<button onclick="deleteFile('${key}',${index})">Delete</button>`;
+            list.appendChild(li);
+        });
+    }
+}
+
+function deleteFile(key,index){
+    let notesData=JSON.parse(localStorage.getItem("notesData")||"{}");
+    notesData[key].splice(index,1);
+    localStorage.setItem("notesData",JSON.stringify(notesData));
+    loadNotes();
+}
+
+function backToEntrance(){
+    if(currentRole==="faculty"){ 
+        if(!confirm("Do you really want to exit? Your login will be cleared.")) return;
+        currentRole="student"; 
+        document.getElementById("facultyCode").value=""; 
+    }
+    hidePages(); showPage("entrancePage");
+}
+function backToSemesters(){ hidePages(); showPage("semesterPage"); }
+function backToSubjects(){ hidePages(); showPage("subjectsPage"); }
+function backToUnits(){ hidePages(); showPage("unitsPage"); }
+function hidePages(){ document.querySelectorAll(".container").forEach(c=>c.classList.add("hidden")); }
+function showPage(id){ const page=document.getElementById(id); page.classList.remove("hidden"); page.style.animation="fadeSlideUp 0.8s forwards"; }
 </script>
 </body>
 </html>
